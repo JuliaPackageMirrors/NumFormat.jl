@@ -40,8 +40,8 @@ s = fmtrfunc( 3.14159 )
 
 Speed penalty is about 20% for floating point and 30% for integers.
 
-If the formatter is stored and used instead (see the second example above), the speed penalty reduces to 10% for
-floating point and 15% for integers.
+If the formatter is stored and used instead (see the example using `generate_formatter` above),
+the speed penalty reduces to 10% for floating point and 15% for integers.
 
 ## Commas
 
@@ -63,7 +63,7 @@ are
 * zeropadding. Boolean
 * commas. Boolean
 * signed. Boolean. Always show +/- sign?
-* positivespace. Prepend an extra space for positive numbers? (so they align nicely with negative numbers)
-* alternative. Boolean. See `#` explanation in standard printf documentation
+* positivespace. Boolean. Prepend an extra space for positive numbers? (so they align nicely with negative numbers)
+* alternative. Boolean. See `#` alternative form explanation in standard printf documentation
 * conversion. length=1 string. Default is type dependent. It can be one of `aAeEfFoxX`. See standard
   printf documentation.
