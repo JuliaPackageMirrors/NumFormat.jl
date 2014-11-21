@@ -90,13 +90,14 @@ The keyword arguments are (Bold keywards are not printf standard)
 * precision. Integer. How many decimal places.
 * leftjustified. Boolean
 * zeropadding. Boolean
-* commas. Boolean.
+* commas. Boolean. Thousands-group separator.
 * signed. Boolean. Always show +/- sign?
 * positivespace. Boolean. Prepend an extra space for positive numbers? (so they align nicely with negative numbers)
 * **parens**. Boolean. Use parenthesis instead of "-". e.g. `(1.01)` instead of `-1.01`. Useful in finance. Note that
   you cannot use `signed` and `parens` option at the same time.
-* **stripzeros**. Boolean. Strip trailing '0' to the right of the decimal (and to the left of 'e', if any ). Note
-  that it may strip the decimal point itself if all trailing places are zeros.
+* **stripzeros**. Boolean. Strip trailing '0' to the right of the decimal (and to the left of 'e', if any ).
+   * It may strip the decimal point itself if all trailing places are zeros.
+   * This is true by default if precision is not given, and vice versa.
 * alternative. Boolean. See `#` alternative form explanation in standard printf documentation
 * conversion. length=1 string. Default is type dependent. It can be one of `aAeEfFoxX`. See standard
   printf documentation.
