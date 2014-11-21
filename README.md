@@ -1,7 +1,8 @@
 # NumFormat
 
 A way to get around the limitation that `@sprintf` has to take a literal string argument.
-It also add commas separator (thousands).
+It also add functionality such as commas separator (thousands), parenthesis for negatives, 
+stripping trailing zeros.
 
 ## Usage and Implementation
 
@@ -18,12 +19,12 @@ Usage
 using NumFormat
 
 fmt = "%10.3f"
-s = sprintf1( fmt, 3.14159 ) # usage 1
+s = sprintf1( fmt, 3.14159 ) # usage 1. Quite performant. Easiest to switch to.
 
-fmtrfunc = generate_formatter( fmt ) # usage 2. This bypass repeated lookup of cached function
+fmtrfunc = generate_formatter( fmt ) # usage 2. This bypass repeated lookup of cached function. Most performant.
 s = fmtrfunc( 3.14159 )
 
-s = format( 3.14159, precision=3 ) # usage 3
+s = format( 3.14159, precision=3 ) # usage 3. Most flexible, with some non-printf options. Least performant.
 ```
 
 ## Alternatives:
@@ -59,14 +60,13 @@ s = mfmtr( n ) # quite fast, but the definition is clunky
 
 ## Speed
 
-Speed penalty is about 20% for floating point and 30% for integers.
+`sprintf1`: Speed penalty is about 20% for floating point and 30% for integers.
 
 If the formatter is stored and used instead (see the example using `generate_formatter` above),
 the speed penalty reduces to 10% for floating point and 15% for integers.
 
 ## Commas
 
-If it is just the speed, the lambda solution demonstrated earlier would have sufficed.
 This package also supplements the lack of thousand separator e.g. `"%'d"`, `"%'f"`, `"%'s"`.
 
 Note: `"%'s"` behavior is that for small enough floating point (but not too small),
@@ -80,20 +80,23 @@ the standard `sprintf` functionality.
 
 An example:
 ```julia
-s = format( 1234, commas=true )
+s = format( 1234, commas=true ) # 1,234
+s = format( -1234, commas=true, parens=true ) # (1,234)
 ```
 
 The keyword arguments are (Bold keywards are not printf standard)
 
-* width. Integer
-* precision. Integer
+* width. Integer. Try to fit the output into this many characters. May not always be successful.
+* precision. Integer. How many decimal places.
 * leftjustified. Boolean
 * zeropadding. Boolean
-* commas. Boolean
+* commas. Boolean.
 * signed. Boolean. Always show +/- sign?
 * positivespace. Boolean. Prepend an extra space for positive numbers? (so they align nicely with negative numbers)
-* **parens**. Boolean. Use parenthesis instead of "-". e.g. `(1.01)` instead of `-1.01`. Useful in finance.
-* **stripzeros**. Boolean. Strip trailing '0' to the right of the decimal (and to the left of 'e', if any )
+* **parens**. Boolean. Use parenthesis instead of "-". e.g. `(1.01)` instead of `-1.01`. Useful in finance. Note that
+  you cannot use `signed` and `parens` option at the same time.
+* **stripzeros**. Boolean. Strip trailing '0' to the right of the decimal (and to the left of 'e', if any ). Note
+  that it may strip the decimal point itself if all trailing places are zeros.
 * alternative. Boolean. See `#` alternative form explanation in standard printf documentation
 * conversion. length=1 string. Default is type dependent. It can be one of `aAeEfFoxX`. See standard
   printf documentation.
