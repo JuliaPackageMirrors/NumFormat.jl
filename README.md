@@ -7,7 +7,7 @@ stripping trailing zeros.
 ## Usage and Implementation
 
 The idea here is that the package compiles a function once for each unique
-format string within the `NumFormat.` name space, so repeated use is faster.
+format string within the `NumFormat.*` name space, so repeated use is faster.
 Unrelated parts of a session using the same format string would reuse the same
 function, avoiding redundant compilation. To avoid the proliferation of
 functions, we limit the usage to only 1 argument. Practical consideration
