@@ -75,14 +75,15 @@ separator is used.
 
 ## Flexible `format` function
 
-This package contains a run-time number formatter `format` function.
+This package contains a run-time number formatter `format` function, which goes beyond
+the standard `sprintf` functionality.
 
 An example:
 ```julia
 s = format( 1234, commas=true )
 ```
 
-The keyword arguments are
+The keyword arguments are (Bold keywards are not printf standard)
 
 * width. Integer
 * precision. Integer
@@ -91,6 +92,8 @@ The keyword arguments are
 * commas. Boolean
 * signed. Boolean. Always show +/- sign?
 * positivespace. Boolean. Prepend an extra space for positive numbers? (so they align nicely with negative numbers)
+* **parens**. Boolean. Use parenthesis instead of "-". e.g. `(1.01)` instead of `-1.01`. Useful in finance.
+* **stripzeros**. Boolean. Strip trailing '0' to the right of the decimal (and to the left of 'e', if any )
 * alternative. Boolean. See `#` alternative form explanation in standard printf documentation
 * conversion. length=1 string. Default is type dependent. It can be one of `aAeEfFoxX`. See standard
   printf documentation.

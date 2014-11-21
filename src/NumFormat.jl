@@ -4,7 +4,7 @@ export sprintf1, generate_formatter, format
 
 formatters = Dict{ ASCIIString, Function }()
 
-function sprintf1{T<:Real}( fmt::ASCIIString, x::T )
+function sprintf1( fmt::ASCIIString, x )
     global formatters
     f = generate_formatter( fmt )
     f( x )
@@ -112,7 +112,7 @@ function generate_format_string(;
     if alternative && in( conversion[1], "aAeEfFoxX" )
         s *= "#"
     end
-    if zeropadding
+    if zeropadding && !leftjustified && width != nothing
         s *= "0"
     end
 
@@ -139,59 +139,115 @@ function format{T<:Real}( x::T;
         width=nothing,
         precision=nothing,
         leftjustified=false,
-        zeropadding=false,
+        zeropadding=false, # when right-justified, use 0 instead of space to fill
         commas=false,
         signed=false,
         positivespace=false,
+        stripzeros=(precision==nothing),
+        parens=false, # use (1.00) instead of -1.00. Used in finance
         alternative=false,
         conversion="")
+    checkwidth = commas
     if conversion == ""
         if T <: FloatingPoint
-            sprintf1( generate_format_string( width=width,
-                precision=precision,
-                leftjustified=leftjustified,
-                zeropadding=zeropadding,
-                commas=commas,
-                signed=signed,
-                positivespace=positivespace,
-                alternative=alternative,
-                conversion="f"
-            ),x)
+            actualconv = "f"
+        elseif T <: Unsigned
+            actualconv = "x"
         elseif T <: Integer
-            sprintf1( generate_format_string( width=width,
-                precision=precision,
-                leftjustified=leftjustified,
-                zeropadding=zeropadding,
-                commas=commas,
-                signed=signed,
-                positivespace=positivespace,
-                alternative=alternative,
-                conversion="d"
-            ),x)
+            actualconv = "d"
         else
-            sprintf1( generate_format_string( width=width,
-                precision=precision,
-                leftjustified=leftjustified,
-                zeropadding=zeropadding,
-                commas=commas,
-                signed=signed,
-                positivespace=positivespace,
-                alternative=alternative,
-                conversion="s"
-            ),x)
+            actualconv = "s"
         end
     else
-        sprintf1( generate_format_string( width=width,
-            precision=precision,
-            leftjustified=leftjustified,
-            zeropadding=zeropadding,
-            commas=commas,
-            signed=signed,
-            positivespace=positivespace,
-            alternative=alternative,
-            conversion=conversion
-        ), x )
+        actualconv = conversion
     end
+    if signed && commas
+        error( "You cannot use signed (+/-) AND commas at the same time")
+    end
+    nonneg = x >= 0
+    if parens && !in( actualconv[1], "xX" )
+        actualx = abs(x)
+    else
+        actualx = x
+    end
+    s = sprintf1( generate_format_string( width=width,
+        precision=precision,
+        leftjustified=leftjustified,
+        zeropadding=zeropadding,
+        commas=commas,
+        signed=signed,
+        positivespace=positivespace,
+        alternative=alternative,
+        conversion=actualconv
+    ),actualx)
+
+    if stripzeros && in( actualconv[1], "fFeEs" )
+        dpos = findfirst( s, '.')
+        if in( actualconv[1], "eEs" )
+            if in( actualconv[1], "es" )
+                epos = findfirst( s, 'e' )
+            else
+                epos = findfirst( s, 'E' )
+            end
+            if epos == 0
+                rpos = length( s )
+            else
+                rpos = epos-1
+            end
+        else
+            rpos = length(s)
+        end
+        # rpos at this point is the rightmost possible char to start
+        # stripping
+        stripfrom = rpos+1
+        for i = rpos:-1:dpos+1
+            if s[i] == '0'
+                stripfrom = i
+            elseif s[i] ==' '
+                continue
+            else
+                break
+            end
+        end
+        if stripfrom <= rpos
+            if stripfrom == dpos+1 # everything after decimal is 0, so strip the decimal too
+                stripfrom = dpos
+            end
+            s = s[1:stripfrom-1] * s[rpos+1:end]
+            checkwidth = true
+        end
+    end
+
+    if parens && !in( actualconv[1], "xX" )
+        # if zero or positive, we still need 1 white space on the right
+        if nonneg
+            s = " " * strip(s) * " "
+        else
+            s = "(" * strip(s) * ")"
+        end
+
+        checkwidth = true
+    end
+
+    if checkwidth && width != nothing
+        if length(s) > width
+            s = replace( s, " ", "", length(s)-width )
+            if length(s) > width && endswith( s, " " )
+                s = reverse( replace( reverse(s), " ", "", length(s)-width ) )
+            end
+            if length(s) > width
+                s = replace( s, ",", "", length(s)-width )
+            end
+        elseif length(s) < width
+            if leftjustified
+                s = s * repeat( " ", width - length(s) )
+            else
+                s = repeat( " ", width - length(s) ) * s
+            end
+        end
+    end
+
+    s
 end
 
 end # module
