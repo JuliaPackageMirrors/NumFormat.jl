@@ -1,14 +1,20 @@
 # NumFormat
 
 A way to get around the limitation that `@sprintf` has to take a literal string argument.
+It also add commas separator (thousands).
 
-Alternatives:
+## Alternatives:
+
+* [Formatting.jl](https://github.com/lindahua/Formatting.jl).
+
+* Put the macro in a quote block and eval it (very slow)
 ```julia
 fmt = "%10d"
 n = 1234
 s = eval( Expr( :macrocall, symbol( "@sprintf" ), fmt, n ) ) # VERY slow
 ```
 
+* Set up a lambda with the macro inside. Ok for repeated use.
 ```julia
 fmt = "%10d"
 n = 1234
@@ -19,6 +25,8 @@ mfmtr = eval(l)
 
 s = mfmtr( n ) # quite fast, but the definition is clunky
 ```
+
+## Implementation
 
 The idea here is that the package compiles a function for each unique format string within
 the `NumFormat.` name space, so repeated use is faster. To avoid the proliferation of
