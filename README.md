@@ -57,6 +57,11 @@ separator is used.
 This package contains a run-time number formatter `format` function. The keyword arguments
 are
 
+An example:
+```julia
+s = format( 1234, commas=true )
+```
+
 * width. Integer
 * precision. Integer
 * leftjustified. Boolean
