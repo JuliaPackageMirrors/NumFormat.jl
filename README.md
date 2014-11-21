@@ -1,12 +1,12 @@
 # NumFormat
 
 A way to get around the limitation that `@sprintf` has to take a literal string argument.
-It also add functionality such as commas separator (thousands), parenthesis for negatives, 
+It also adds functionalities such as commas separator (thousands), parenthesis for negatives,
 stripping trailing zeros.
 
 ## Usage and Implementation
 
-The idea here is that the package compiles a function once for each unique
+The idea here is that the package compiles a function only once for each unique
 format string within the `NumFormat.*` name space, so repeated use is faster.
 Unrelated parts of a session using the same format string would reuse the same
 function, avoiding redundant compilation. To avoid the proliferation of
@@ -27,7 +27,7 @@ s = fmtrfunc( 3.14159 )
 s = format( 3.14159, precision=3 ) # usage 3. Most flexible, with some non-printf options. Least performant.
 ```
 
-## Alternatives:
+## Alternative approaches suggested by others:
 
 * [Formatting.jl](https://github.com/lindahua/Formatting.jl).
 
@@ -35,7 +35,7 @@ s = format( 3.14159, precision=3 ) # usage 3. Most flexible, with some non-print
 ```julia
 fmt = "%10d"
 n = 1234
-s = eval( Expr( :macrocall, symbol( "@sprintf" ), fmt, n ) ) # VERY slow
+s = eval( Expr( :macrocall, symbol( "@sprintf" ), fmt, n ) ) # VERY slow, 1000x penalty
 ```
 * `ccall` to libc sprintf. See [this gist](https://gist.github.com/dpo/11000433). The
 example shows 6-7x speed penalty.
