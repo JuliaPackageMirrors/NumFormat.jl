@@ -3,6 +3,29 @@
 A way to get around the limitation that `@sprintf` has to take a literal string argument.
 It also add commas separator (thousands).
 
+## Usage and Implementation
+
+The idea here is that the package compiles a function once for each unique
+format string within the `NumFormat.` name space, so repeated use is faster.
+Unrelated parts of a session using the same format string would reuse the same
+function, avoiding redundant compilation. To avoid the proliferation of
+functions, we limit the usage to only 1 argument. Practical consideration
+would suggest that only dozens of functions would be created in a session, which
+seems manageable.
+
+Usage
+```julia
+using NumFormat
+
+fmt = "%10.3f"
+s = sprintf1( fmt, 3.14159 ) # usage 1
+
+fmtrfunc = generate_formatter( fmt ) # usage 2. This bypass repeated lookup of cached function
+s = fmtrfunc( 3.14159 )
+
+s = format( 3.14159, precision=3 ) # usage 3
+```
+
 ## Alternatives:
 
 * [Formatting.jl](https://github.com/lindahua/Formatting.jl).
@@ -13,35 +36,25 @@ fmt = "%10d"
 n = 1234
 s = eval( Expr( :macrocall, symbol( "@sprintf" ), fmt, n ) ) # VERY slow
 ```
+* `ccall` to libc sprintf. See [this gist](https://gist.github.com/dpo/11000433). The
+example shows 6-7x speed penalty.
 
-* Set up a lambda with the macro inside. Ok for repeated use.
+* Set up a lambda with the macro inside. Ok for repeated use. But the lambda
+goes out of scope quickly so it cannot be reused. `@eval` would also repeat
+compilation, even for the same format.
 ```julia
 fmt = "%10d"
 n = 1234
 
+#method A lambda
 l = :( x -> x ) # placeholder lambda
 l.args[2].args[2] = Expr( :macrocall, symbol( "@sprintf" ), fmt, :x )
 mfmtr = eval(l)
 
+#method B @eval
+@eval mfmtr(x) = @sprintf($fmt,x)
+
 s = mfmtr( n ) # quite fast, but the definition is clunky
-```
-
-## Implementation
-
-The idea here is that the package compiles a function for each unique format string within
-the `NumFormat.` name space, so repeated use is faster. To avoid the proliferation of
-functions, we limit the usage to only 1 argument. Practical consideration
-would suggest that only dozens of functions would be created in a session, which
-seems manageable.
-
-```julia
-using NumFormat
-
-fmt = "%10.3f"
-s = sprintf1( fmt, 3.14159 )
-
-fmtrfunc = generate_formatter( fmt ) # this bypass repeated lookup of cached function
-s = fmtrfunc( 3.14159 )
 ```
 
 ## Speed
