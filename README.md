@@ -75,13 +75,14 @@ separator is used.
 
 ## Flexible `format` function
 
-This package contains a run-time number formatter `format` function. The keyword arguments
-are
+This package contains a run-time number formatter `format` function.
 
 An example:
 ```julia
 s = format( 1234, commas=true )
 ```
+
+The keyword arguments are
 
 * width. Integer
 * precision. Integer
