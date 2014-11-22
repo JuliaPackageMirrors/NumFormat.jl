@@ -103,7 +103,7 @@ end
 function test_format()
     println( "test format...")
     @test format( 10 ) == "10"
-    @test format( 10.0 ) == @sprintf( "%f", 10.0 )
+    @test format( 10.0 ) == "10"
     @test format( 1234, commas=true ) == "1,234"
     @test format( 1123, conversion="x" ) == "463"
     @test format( 1123, alternative=true, conversion="x" ) == "0x463"
