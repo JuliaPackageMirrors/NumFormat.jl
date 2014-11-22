@@ -40,16 +40,22 @@ function generate_formatter( fmt::ASCIIString )
         end
         if in( conversion, "sfF" )
             code = quote
-                function $func( x )
+                function $func{T<:Real}( x::T )
                     s = @sprintf( $fmtactual, x )
-                    dpos = findfirst( s, '.' )
-                    if dpos != 0
-                        s = addcommas( s[1:dpos-1] ) * s[ dpos:end ]
-                    else # find the rightmost digit
-                        for i in length( s ):-1:1
-                            if isdigit( s[i] )
-                                s = addcommas( s[1:i] ) * s[i+1:end]
-                                break
+                    # commas are added to only the numerator
+                    if T <: Rational && endswith( $fmtactual, "s" )
+                        spos = findfirst( s, '/' )
+                        s = addcommas( s[1:spos-1] ) * s[spos:end]
+                    else
+                        dpos = findfirst( s, '.' )
+                        if dpos != 0
+                            s = addcommas( s[1:dpos-1] ) * s[ dpos:end ]
+                        else # find the rightmost digit
+                            for i in length( s ):-1:1
+                                if isdigit( s[i] )
+                                    s = addcommas( s[1:i] ) * s[i+1:end]
+                                    break
+                                end
                             end
                         end
                     end
@@ -145,7 +151,12 @@ function format{T<:Real}( x::T;
         positivespace=false,
         stripzeros=(precision==nothing),
         parens=false, # use (1.00) instead of -1.00. Used in finance
-        alternative=false,
+        alternative=false, # usually for hex
+        mixedfraction=false,
+        mixedfractionsep="_",
+        fractionsep="/", # num / den
+        fractionwidth = 0,
+        tryden = 0, # if 2 or higher, try to use this denominator, without losing precision
         conversion="")
     checkwidth = commas
     if conversion == ""
@@ -156,6 +167,7 @@ function format{T<:Real}( x::T;
         elseif T <: Integer
             actualconv = "d"
         else
+            conversion = "s"
             actualconv = "s"
         end
     else
@@ -164,11 +176,19 @@ function format{T<:Real}( x::T;
     if signed && commas
         error( "You cannot use signed (+/-) AND commas at the same time")
     end
+
     nonneg = x >= 0
-    if parens && !in( actualconv[1], "xX" )
-        actualx = abs(x)
+    fractional = 0
+    if T <: Rational && mixedfraction
+        actualconv = "d"
+        actualx = int( trunc( x ) )
+        fractional = abs(x) - abs(actualx)
     else
-        actualx = x
+        if parens && !in( actualconv[1], "xX" )
+            actualx = abs(x)
+        else
+            actualx = x
+        end
     end
     s = sprintf1( generate_format_string( width=width,
         precision=precision,
@@ -181,7 +201,29 @@ function format{T<:Real}( x::T;
         conversion=actualconv
     ),actualx)
 
-    if stripzeros && in( actualconv[1], "fFeEs" )
+    if T <:Rational && mixedfraction && fractional != 0 && conversion[1] == 's'
+        num = fractional.num
+        den = fractional.den
+        if tryden >= 2 && mod( tryden, den ) == 0
+            num *= div(tryden,den)
+            den = tryden
+        end
+        fs = string( num ) * fractionsep * string(den)
+        if length(fs) < fractionwidth
+            fs = repeat( "0", fractionwidth - length(fs) ) * fs
+        end
+        s = rstrip(s)
+        if actualx != 0
+            s = rstrip(s) * mixedfractionsep * fs
+        else
+            if !nonneg
+                s = "-" * fs
+            else
+                s = fs
+            end
+        end
+        checkwidth = true
+    elseif stripzeros && in( actualconv[1], "fFeEs" )
         dpos = findfirst( s, '.')
         if in( actualconv[1], "eEs" )
             if in( actualconv[1], "es" )

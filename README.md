@@ -86,7 +86,8 @@ s = format( -1234, commas=true, parens=true ) # (1,234)
 
 The keyword arguments are (Bold keywards are not printf standard)
 
-* width. Integer. Try to fit the output into this many characters. May not always be successful.
+* width. Integer. Try to fit the output into this many characters. May not be successful.
+   Sacrifice space first, then commas.
 * precision. Integer. How many decimal places.
 * leftjustified. Boolean
 * zeropadding. Boolean
@@ -101,3 +102,10 @@ The keyword arguments are (Bold keywards are not printf standard)
 * alternative. Boolean. See `#` alternative form explanation in standard printf documentation
 * conversion. length=1 string. Default is type dependent. It can be one of `aAeEfFoxX`. See standard
   printf documentation.
+* **mixedfraction**. Boolean. If the number is rational, format it in mixed fraction e.g. `1_1/2` instead of `3//2`
+* **mixedfractionsep**. Default `_`
+* **fractionsep**. Default `/`
+* **fractionwidth**. Integer. Try to pad zeros to the numerator until the fractional part has this width
+* **tryden**. Integer. Try to use this denominator instead of a smaller one. No-op if it'd lose precision.
+
+See the test script for more examples.

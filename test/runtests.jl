@@ -104,9 +104,46 @@ function test_format()
     println( "test format...")
     @test format( 10 ) == "10"
     @test format( 10.0 ) == "10"
+    @test format( 10.0, precision=2 ) == "10.00"
     @test format( 1234, commas=true ) == "1,234"
-    @test format( 1123, conversion="x" ) == "463"
-    @test format( 1123, alternative=true, conversion="x" ) == "0x463"
+    @test format( 1234, conversion="f", precision=2 ) == "1234.00"
+
+    # hex output
+    @test format( 1118, conversion="x" ) == "45e"
+    @test format( 1118, width=4, conversion="x" ) == " 45e"
+    @test format( 1118, width=4, zeropadding=true, conversion="x" ) == "045e"
+    @test format( 1118, alternative=true, conversion="x" ) == "0x45e"
+    @test format( 1118, width=4, alternative=true, conversion="x" ) == "0x45e"
+    @test format( 1118, width=6, alternative=true, conversion="x", zeropadding=true ) == "0x045e"
+
+    # mixed fractions
+    @test format( 3//2, mixedfraction=true ) == "1_1/2"
+    @test format( -3//2, mixedfraction=true ) == "-1_1/2"
+    @test format( 3//100, mixedfraction=true ) == "3/100"
+    @test format( -3//100, mixedfraction=true ) == "-3/100"
+    @test format( 307//100, mixedfraction=true ) == "3_7/100"
+    @test format( -307//100, mixedfraction=true ) == "-3_7/100"
+    @test format( 307//100, mixedfraction=true, fractionwidth=6 ) == "3_07/100"
+    @test format( -307//100, mixedfraction=true, fractionwidth=6 ) == "-3_07/100"
+    @test format( -302//100, mixedfraction=true ) == "-3_1/50"
+    # try to make the denominator 100
+    @test format( -302//100, mixedfraction=true,tryden = 100 ) == "-3_2/100"
+    @test format( -302//30, mixedfraction=true,tryden = 100 ) == "-10_1/15" # lose precision otherwise
+
+    #commas
+    @test format( 12345678, width=10, commas=true ) == "12,345,678"
+    # it would try to squeeze out the commas
+    @test format( 12345678, width=9, commas=true ) == "12345,678"
+    # until it can't anymore
+    @test format( 12345678, width=8, commas=true ) == "12345678"
+    @test format( 12345678, width=7, commas=true ) == "12345678"
+
+    # this shows how, with enough space, parens line up with empty spaces
+    @test format(  12345678, width=12, commas=true, parens=true )== " 12,345,678 "
+    @test format( -12345678, width=12, commas=true, parens=true )== "(12,345,678)"
+    # same with unspecified width
+    @test format(  12345678, commas=true, parens=true )== " 12,345,678 "
+    @test format( -12345678, commas=true, parens=true )== "(12,345,678)"
 end
 
 test_commas()
