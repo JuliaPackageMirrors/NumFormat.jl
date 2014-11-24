@@ -105,8 +105,16 @@ function test_format()
     @test format( 10 ) == "10"
     @test format( 10.0 ) == "10"
     @test format( 10.0, precision=2 ) == "10.00"
+    @test format( 111//100, precision=2 ) == "1.11"
+    @test format( 111//100 ) == "111/100"
     @test format( 1234, commas=true ) == "1,234"
     @test format( 1234, conversion="f", precision=2 ) == "1234.00"
+    @test format( 1.23, precision=3 ) == "1.230"
+    @test format( 1.23, precision=3, stripzeros=true ) == "1.23"
+    @test format( 1.00, precision=3, stripzeros=true ) == "1"
+
+    @test format( 1.0, conversion="e", stripzeros=true ) == "1e+00"
+    @test format( 1.0, conversion="e", precision=4 ) == "1.0000e+00"
 
     # hex output
     @test format( 1118, conversion="x" ) == "45e"
@@ -137,6 +145,9 @@ function test_format()
     # until it can't anymore
     @test format( 12345678, width=8, commas=true ) == "12345678"
     @test format( 12345678, width=7, commas=true ) == "12345678"
+
+    # only the numerator would have commas
+    @test format( 1111//1000, commas=true ) == "1,111/1000"
 
     # this shows how, with enough space, parens line up with empty spaces
     @test format(  12345678, width=12, commas=true, parens=true )== " 12,345,678 "

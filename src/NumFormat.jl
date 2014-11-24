@@ -144,23 +144,23 @@ end
 function format{T<:Real}( x::T;
         width=nothing,
         precision=nothing,
-        leftjustified=false,
-        zeropadding=false, # when right-justified, use 0 instead of space to fill
-        commas=false,
-        signed=false,
-        positivespace=false,
-        stripzeros=(precision==nothing),
-        parens=false, # use (1.00) instead of -1.00. Used in finance
-        alternative=false, # usually for hex
-        mixedfraction=false,
+        leftjustified::Bool=false,
+        zeropadding::Bool=false, # when right-justified, use 0 instead of space to fill
+        commas::Bool=false,
+        signed::Bool=false,
+        positivespace::Bool=false,
+        stripzeros::Bool=(precision==nothing),
+        parens::Bool=false, # use (1.00) instead of -1.00. Used in finance
+        alternative::Bool=false, # usually for hex
+        mixedfraction::Bool=false,
         mixedfractionsep="_",
         fractionsep="/", # num / den
-        fractionwidth = 0,
+        fractionwidth::Int = 0,
         tryden = 0, # if 2 or higher, try to use this denominator, without losing precision
-        conversion="")
+        conversion::ASCIIString="")
     checkwidth = commas
     if conversion == ""
-        if T <: FloatingPoint
+        if T <: FloatingPoint || T <: Rational && precision != nothing
             actualconv = "f"
         elseif T <: Unsigned
             actualconv = "x"
@@ -175,6 +175,9 @@ function format{T<:Real}( x::T;
     end
     if signed && commas
         error( "You cannot use signed (+/-) AND commas at the same time")
+    end
+    if T <: Rational && conversion == "s"
+        stripzeros = false
     end
 
     nonneg = x >= 0
@@ -201,28 +204,33 @@ function format{T<:Real}( x::T;
         conversion=actualconv
     ),actualx)
 
-    if T <:Rational && mixedfraction && fractional != 0 && conversion[1] == 's'
-        num = fractional.num
-        den = fractional.den
-        if tryden >= 2 && mod( tryden, den ) == 0
-            num *= div(tryden,den)
-            den = tryden
-        end
-        fs = string( num ) * fractionsep * string(den)
-        if length(fs) < fractionwidth
-            fs = repeat( "0", fractionwidth - length(fs) ) * fs
-        end
-        s = rstrip(s)
-        if actualx != 0
-            s = rstrip(s) * mixedfractionsep * fs
-        else
-            if !nonneg
-                s = "-" * fs
-            else
-                s = fs
+    if T <:Rational && conversion == "s"
+        if mixedfraction && fractional != 0
+            num = fractional.num
+            den = fractional.den
+            if tryden >= 2 && mod( tryden, den ) == 0
+                num *= div(tryden,den)
+                den = tryden
             end
+            fs = string( num ) * fractionsep * string(den)
+            if length(fs) < fractionwidth
+                fs = repeat( "0", fractionwidth - length(fs) ) * fs
+            end
+            s = rstrip(s)
+            if actualx != 0
+                s = rstrip(s) * mixedfractionsep * fs
+            else
+                if !nonneg
+                    s = "-" * fs
+                else
+                    s = fs
+                end
+            end
+            checkwidth = true
+        elseif !mixedfraction
+            s = replace( s, "//", fractionsep )
+            checkwidth = true
         end
-        checkwidth = true
     elseif stripzeros && in( actualconv[1], "fFeEs" )
         dpos = findfirst( s, '.')
         if in( actualconv[1], "eEs" )
