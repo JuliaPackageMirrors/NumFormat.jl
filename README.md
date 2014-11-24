@@ -1,8 +1,10 @@
 # NumFormat
 
 A way to get around the limitation that `@sprintf` has to take a literal string argument.
+The core part is basically a c-style print formatter using the standard
+`@sprintf` macro.
 It also adds functionalities such as commas separator (thousands), parenthesis for negatives,
-stripping trailing zeros.
+stripping trailing zeros, and mixed fractions.
 
 ## Usage and Implementation
 
@@ -102,7 +104,7 @@ The keyword arguments are (Bold keywards are not printf standard)
 * alternative. Boolean. See `#` alternative form explanation in standard printf documentation
 * conversion. length=1 string. Default is type dependent. It can be one of `aAeEfFoxX`. See standard
   printf documentation.
-* **mixedfraction**. Boolean. If the number is rational, format it in mixed fraction e.g. `1_1/2` instead of `3//2`
+* **mixedfraction**. Boolean. If the number is rational, format it in mixed fraction e.g. `1_1/2` instead of `3/2`
 * **mixedfractionsep**. Default `_`
 * **fractionsep**. Default `/`
 * **fractionwidth**. Integer. Try to pad zeros to the numerator until the fractional part has this width
