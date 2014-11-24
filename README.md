@@ -1,5 +1,7 @@
 # NumFormat
 
+[![Build Status](https://travis-ci.org/tonyhffong/NumFormat.jl.svg?branch=master)](https://travis-ci.org/tonyhffong/NumFormat.jl)
+
 A way to get around the limitation that `@sprintf` has to take a literal string argument.
 The core part is basically a c-style print formatter using the standard
 `@sprintf` macro.
