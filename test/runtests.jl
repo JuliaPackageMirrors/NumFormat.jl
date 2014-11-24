@@ -137,6 +137,7 @@ function test_format()
     # try to make the denominator 100
     @test format( -302//100, mixedfraction=true,tryden = 100 ) == "-3_2/100"
     @test format( -302//30, mixedfraction=true,tryden = 100 ) == "-10_1/15" # lose precision otherwise
+    @test format( -302//100, mixedfraction=true,tryden = 100,fractionwidth=6 ) == "-3_02/100" # lose precision otherwise
 
     #commas
     @test format( 12345678, width=10, commas=true ) == "12,345,678"
