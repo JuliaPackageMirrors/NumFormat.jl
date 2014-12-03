@@ -1,5 +1,9 @@
 # NumFormat
 
+*IMPORTANT: all of this package’s functionalities are being merged into
+[Formatting.jl](https://github.com/lindahua/Formatting.jl), please use that
+instead*
+
 [![Build Status](https://travis-ci.org/tonyhffong/NumFormat.jl.svg?branch=master)](https://travis-ci.org/tonyhffong/NumFormat.jl)
 
 A way to get around the limitation that `@sprintf` has to take a literal string argument.
